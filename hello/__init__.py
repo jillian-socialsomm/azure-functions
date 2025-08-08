@@ -1,10 +1,21 @@
-import json
+import logging
 import azure.functions as func
-import requests  # proves requirements.txt was installed
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    return func.HttpResponse(
-        json.dumps({"ok": True, "requests_version": requests.__version__}),
-        mimetype="application/json",
-        status_code=200
-    )
+    logging.info("Hello function processed a request.")
+    name = req.params.get("name")
+    if not name:
+        try:
+            req_body = req.get_json()
+        except ValueError:
+            pass
+        else:
+            name = req_body.get("name")
+
+    if name:
+        return func.HttpResponse(f"Hello, {name}!")
+    else:
+        return func.HttpResponse(
+            "Please pass a name on the query string or in the request body",
+            status_code=400
+        )
