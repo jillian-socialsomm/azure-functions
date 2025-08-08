@@ -2,32 +2,25 @@ name: Build and Deploy Azure Function (Python)
 
 on:
   push:
-    branches: [ main ]     # change if you deploy a different branch
-  workflow_dispatch:       # allow manual runs from the Actions tab
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --- sanity: show what the runner actually sees ---
       - name: List repo root
         run: |
           pwd
           ls -la
-      - name: List azure-functions folder
-        run: |
-          ls -la azure-functions
 
-      # --- deploy the *folder* that contains host.json + requirements.txt ---
-      # This triggers an Oryx (server-side) build so pip installs from requirements.txt.
-      - name: Deploy to Azure Functions (source deploy → Oryx builds)
+      - name: Deploy to Azure Functions (Oryx build)
         uses: azure/functions-action@v1
         with:
           app-name: YOUR_FUNCTION_APP_NAME
-          package: azure-functions              # <— deploy this folder as app root
+          package: .                                 # repo root
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-          scm-do-build-during-deployment: true # <— tell Azure to run Oryx build
+          scm-do-build-during-deployment: true
